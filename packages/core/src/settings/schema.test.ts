@@ -18,6 +18,7 @@ describe('settingsSchema', () => {
       describeAssets: true,
       transcriptionFormat: true,
       contactsEnabled: false,
+      updateAutoCheck: true,
       mobileOnboarded: false,
       mobileStorage: 'local',
       mobileGraphName: '',
@@ -49,6 +50,7 @@ describe('settingsSchema', () => {
     expect(DEFAULT_SETTINGS.describeAssets).toBe(true)
     expect(DEFAULT_SETTINGS.transcriptionFormat).toBe(true)
     expect(DEFAULT_SETTINGS.contactsEnabled).toBe(false)
+    expect(DEFAULT_SETTINGS.updateAutoCheck).toBe(true)
     expect(DEFAULT_SETTINGS.mobileOnboarded).toBe(false)
     expect(DEFAULT_SETTINGS.mobileStorage).toBe('local')
     expect(DEFAULT_SETTINGS.theme).toBe('system')
@@ -120,6 +122,8 @@ describe('settingsSchema', () => {
     expect(settingsSchema.parse({ transcriptionFormat: false }).transcriptionFormat).toBe(false)
     expect(settingsSchema.parse({ contactsEnabled: true }).contactsEnabled).toBe(true)
     expect(settingsSchema.parse({ contactsEnabled: false }).contactsEnabled).toBe(false)
+    expect(settingsSchema.parse({ updateAutoCheck: true }).updateAutoCheck).toBe(true)
+    expect(settingsSchema.parse({ updateAutoCheck: false }).updateAutoCheck).toBe(false)
     expect(
       settingsSchema.parse({ allNotesFilterTags: ['meeting'] }).allNotesFilterTags,
     ).toEqual(['meeting'])
@@ -198,6 +202,8 @@ describe('settingsSchema', () => {
     expect(settingsSchema.parse({ transcriptionFormat: 0 }).transcriptionFormat).toBe(true)
     expect(settingsSchema.parse({ contactsEnabled: 'yes' }).contactsEnabled).toBe(false)
     expect(settingsSchema.parse({ contactsEnabled: 1 }).contactsEnabled).toBe(false)
+    expect(settingsSchema.parse({ updateAutoCheck: 'no' }).updateAutoCheck).toBe(true)
+    expect(settingsSchema.parse({ updateAutoCheck: 0 }).updateAutoCheck).toBe(true)
     expect(settingsSchema.parse({ allNotesFilterTags: 'book' }).allNotesFilterTags).toEqual([
       'book',
       'link',
@@ -234,6 +240,7 @@ describe('settingsSchema', () => {
       describeAssets: true,
       transcriptionFormat: true,
       contactsEnabled: false,
+      updateAutoCheck: true,
       mobileOnboarded: false,
       mobileStorage: 'local',
       mobileGraphName: '',

@@ -1,5 +1,6 @@
 import { useEffect, type ReactElement } from 'react'
 import { toast } from 'sonner'
+import { useSettings } from '@/providers/settings-provider'
 import { useUpdate } from '@/providers/update-provider'
 
 const UPDATE_TOAST_ID = 'reflect-update'
@@ -18,8 +19,19 @@ function runToastAction(action: () => Promise<void>): void {
 /** Mirrors the auto-update lifecycle into the global Sonner notification surface. */
 export function UpdateToast(): ReactElement | null {
   const { state, install, restart } = useUpdate()
+  const { settings } = useSettings()
+  // `updateAutoCheck` is the user's "no update prompts" switch: when off, the
+  // provider also stops auto-checking, but a manual "Check for updates" (from
+  // the settings field) still transitions state — we suppress its toast here
+  // to honor the preference for both entry points, and dismiss whatever is
+  // already showing when the setting flips off mid-session.
+  const toastsEnabled = settings.updateAutoCheck
 
   useEffect(() => {
+    if (!toastsEnabled) {
+      toast.dismiss(UPDATE_TOAST_ID)
+      return
+    }
     switch (state.phase) {
       case 'available':
         toast.message('Update available', {
@@ -79,7 +91,7 @@ export function UpdateToast(): ReactElement | null {
         toast.dismiss(UPDATE_TOAST_ID)
         break
     }
-  }, [install, restart, state])
+  }, [install, restart, state, toastsEnabled])
 
   return null
 }

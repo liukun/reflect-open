@@ -17,6 +17,8 @@ const toast = vi.hoisted(() => ({
   success: vi.fn(),
 }))
 
+const settings = vi.hoisted(() => ({ updateAutoCheck: true }))
+
 vi.mock('@/providers/update-provider', () => ({
   useUpdate: () => ({
     state: update.state,
@@ -27,10 +29,15 @@ vi.mock('@/providers/update-provider', () => ({
   }),
 }))
 
+vi.mock('@/providers/settings-provider', () => ({
+  useSettings: () => ({ settings }),
+}))
+
 vi.mock('sonner', () => ({ toast }))
 
 afterEach(() => {
   update.state = { phase: 'idle' }
+  settings.updateAutoCheck = true
   update.install.mockClear()
   update.restart.mockClear()
   toast.dismiss.mockClear()
@@ -94,6 +101,20 @@ describe('UpdateToast', () => {
         }),
       ),
     )
+  })
+
+  it('suppresses the toast when updateAutoCheck is off, even if an update is available', async () => {
+    settings.updateAutoCheck = false
+    update.state = { phase: 'available', version: '1.2.3' }
+    await render(<UpdateToast />)
+
+    // The setting is a hard "no update prompts" switch: nothing should mount,
+    // and any toast still on screen from before the setting flipped dismisses.
+    await vi.waitFor(() => expect(toast.dismiss).toHaveBeenCalledWith('reflect-update'))
+    expect(toast.message).not.toHaveBeenCalled()
+    expect(toast.success).not.toHaveBeenCalled()
+    expect(toast.loading).not.toHaveBeenCalled()
+    expect(toast.error).not.toHaveBeenCalled()
   })
 
   it('surfaces install errors but ignores check-only states', async () => {

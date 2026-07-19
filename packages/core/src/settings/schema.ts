@@ -265,6 +265,19 @@ export const mobileGraphNameSchema = z.string().catch('')
 export const contactsEnabledSchema = z.boolean().catch(false)
 
 /**
+ * Whether the desktop app checks for updates automatically (on launch and on
+ * an interval) and surfaces the "Update available" toast/restart prompt when
+ * one is found. On by default. Turning it off is the "don't bother me"
+ * preference: the periodic checker stays quiet, and any in-flight prompt
+ * dismisses. The About-section "Check for updates" button keeps working as an
+ * on-demand escape hatch — its result renders inline in the settings field.
+ *
+ * Desktop-only in effect (the update UI is gated on the Tauri updater plugin);
+ * mobile ships through the app stores and never reads this key.
+ */
+export const updateAutoCheckSchema = z.boolean().catch(true)
+
+/**
  * Whether the Apple Calendar integration is on. Off by default — turning it
  * on triggers the macOS calendar-permission prompt, and that is the user's
  * call. Access is read-only and entirely local (EventKit); see
@@ -470,6 +483,7 @@ export const settingsSchema = z
     describeAssets: describeAssetsSchema,
     transcriptionFormat: transcriptionFormatSchema,
     contactsEnabled: contactsEnabledSchema,
+    updateAutoCheck: updateAutoCheckSchema,
     mobileOnboarded: mobileOnboardedSchema,
     mobileStorage: mobileStorageKindSchema,
     mobileGraphName: mobileGraphNameSchema,

@@ -14,6 +14,7 @@ import {
   type UpdateController,
   type UpdateState,
 } from '@/lib/update-controller'
+import { useSettings } from '@/providers/settings-provider'
 
 interface UpdateContextValue {
   state: UpdateState
@@ -35,9 +36,10 @@ const IDLE: UpdateState = { phase: 'idle' }
 interface UpdateProviderProps {
   children: ReactNode
   /**
-   * Override the launch + periodic check. Defaults to on in the packaged app
-   * and off in dev (and wherever no native shell exists) — `tauri dev` builds
-   * would otherwise prompt to "update" to the released version.
+   * Override the launch + periodic check. When unset the provider follows the
+   * `updateAutoCheck` setting (on by default), gated by "packaged desktop
+   * build" — `tauri dev` would otherwise prompt to "update" to the released
+   * version. Tests pass an explicit boolean to freeze the behavior.
    */
   autoCheck?: boolean
 }
@@ -50,7 +52,12 @@ interface UpdateProviderProps {
  */
 export function UpdateProvider({ children, autoCheck }: UpdateProviderProps): ReactElement {
   const supported = hasBridge()
-  const resolvedAutoCheck = autoCheck ?? (supported && !import.meta.env.DEV)
+  const { settings } = useSettings()
+  // Prop override wins for tests; otherwise obey the user's `updateAutoCheck`
+  // preference — but still short-circuit outside a packaged desktop build so
+  // dev prompts don't fire.
+  const resolvedAutoCheck =
+    autoCheck ?? (supported && !import.meta.env.DEV && settings.updateAutoCheck)
   const [controller, setController] = useState<UpdateController | null>(null)
 
   // One checker per app: secondary note windows never poll for updates.

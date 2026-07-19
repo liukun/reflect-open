@@ -13,9 +13,19 @@ const update = vi.hoisted(() => ({
 }))
 vi.mock('@/providers/update-provider', () => ({ useUpdate: () => update }))
 
+const settings = vi.hoisted(() => ({
+  data: { updateAutoCheck: true },
+  updateSettings: vi.fn<(patch: { updateAutoCheck?: boolean }) => void>(),
+}))
+vi.mock('@/providers/settings-provider', () => ({
+  useSettings: () => ({ settings: settings.data, updateSettings: settings.updateSettings }),
+}))
+
 afterEach(() => {
   update.checkNow.mockClear()
   update.install.mockClear()
+  settings.data = { updateAutoCheck: true }
+  settings.updateSettings.mockClear()
 })
 
 describe('UpdateField', () => {
@@ -34,5 +44,21 @@ describe('UpdateField', () => {
     await userEvent.click(page.getByRole('button', { name: 'Check for updates' }))
     expect(update.checkNow).toHaveBeenCalledTimes(1)
     expect(update.install).not.toHaveBeenCalled()
+  })
+
+  it('toggles the automatic-checks setting from the inline switch', async () => {
+    await render(<UpdateField />)
+    const toggle = page.getByRole('switch', { name: 'Updates' })
+    await expect.element(toggle).toHaveAttribute('aria-checked', 'true')
+    await userEvent.click(toggle)
+    expect(settings.updateSettings).toHaveBeenCalledWith({ updateAutoCheck: false })
+  })
+
+  it('reflects the setting state on the switch', async () => {
+    settings.data = { updateAutoCheck: false }
+    await render(<UpdateField />)
+    await expect
+      .element(page.getByRole('switch', { name: 'Updates' }))
+      .toHaveAttribute('aria-checked', 'false')
   })
 })

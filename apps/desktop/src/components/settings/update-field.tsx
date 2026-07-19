@@ -1,15 +1,22 @@
-import type { ReactElement } from 'react'
+import { useId, type ReactElement } from 'react'
 import { ArrowDownToLine, RefreshCw, RotateCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { useSettings } from '@/providers/settings-provider'
 import { useUpdate } from '@/providers/update-provider'
-import { SettingsField } from './field'
 
 /**
  * The manual path to the same updater the app checks on launch: one button
  * whose label tracks the update lifecycle, with the outcome reported inline.
+ * The row also hosts the "automatic update checks" switch — the setting and
+ * the on-demand button belong on the same line because the switch is
+ * literally *"whether that button runs on a timer"*.
  */
 export function UpdateField(): ReactElement {
   const { state, checkNow, install, restart } = useUpdate()
+  const { settings, updateSettings } = useSettings()
+  const labelId = useId()
+  const descriptionId = useId()
 
   const action: {
     label: string
@@ -43,10 +50,26 @@ export function UpdateField(): ReactElement {
 
   const run = action.run
   return (
-    <SettingsField
-      legend="Updates"
-      description="Reflect checks for new versions on launch and installs them only when you say so."
-    >
+    <fieldset className="px-4 py-3.5" aria-labelledby={labelId} aria-describedby={descriptionId}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div id={labelId} className="text-sm font-medium text-text">
+            Updates
+          </div>
+          <p id={descriptionId} className="mt-0.5 text-xs text-text-muted">
+            Automatically check for new versions on launch and every few hours, and show a prompt
+            when one is available. Turn off to silence updates — the button below still lets you
+            check on demand.
+          </p>
+        </div>
+        <Switch
+          aria-labelledby={labelId}
+          aria-describedby={descriptionId}
+          checked={settings.updateAutoCheck}
+          onCheckedChange={(checked) => updateSettings({ updateAutoCheck: checked })}
+          className="shrink-0"
+        />
+      </div>
       <div className="mt-3 flex items-center gap-3">
         <Button
           type="button"
@@ -74,6 +97,6 @@ export function UpdateField(): ReactElement {
           </span>
         ) : null}
       </div>
-    </SettingsField>
+    </fieldset>
   )
 }
