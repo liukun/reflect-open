@@ -57,6 +57,24 @@ export const editorDefaultBulletSchema = z.boolean().catch(true)
 export const editorBulletAfterHeadingSchema = z.boolean().catch(true)
 
 /**
+ * Whether today's daily note automatically prefixes a bullet line with the
+ * current time as soon as the user starts writing that line. On by default.
+ * Scoped to today only: back-dated or future daily notes never rewrite — a
+ * timestamp captured *now* on a past or future page would be misleading.
+ *
+ * The prefix format is a backtick-wrapped 24-hour time followed by one space:
+ * `` `14:30` ``. It is inserted at the start of the list item's paragraph
+ * content the moment the paragraph transitions from empty to non-empty —
+ * whether the character came from a keystroke, a paste, or an IME
+ * composition. Applied only to top-level bullet-list items (`kind: 'bullet'`);
+ * task lists, ordered lists, nested lists, headings, paragraphs, and code
+ * blocks are never modified. Skipped when the line already starts with a
+ * backtick (an inline code span or a user-typed timestamp — either way the
+ * plugin stays out of the way).
+ */
+export const editorDailyNoteAutoTimestampSchema = z.boolean().catch(true)
+
+/**
  * Whether the caret animates smoothly between positions while editing. On by
  * default. Display-only; it never changes the document or stored Markdown.
  */
@@ -442,6 +460,7 @@ export const settingsSchema = z
     editorSpellCheck: editorSpellCheckSchema,
     editorDefaultBullet: editorDefaultBulletSchema,
     editorBulletAfterHeading: editorBulletAfterHeadingSchema,
+    editorDailyNoteAutoTimestamp: editorDailyNoteAutoTimestampSchema,
     editorSmoothCaretAnimation: editorSmoothCaretAnimationSchema,
     editorTextSize: editorTextSizeSchema,
     editorFullWidth: editorFullWidthSchema,

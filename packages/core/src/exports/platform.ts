@@ -170,6 +170,7 @@ export {
   editorSpellCheckSchema,
   editorDefaultBulletSchema,
   editorBulletAfterHeadingSchema,
+  editorDailyNoteAutoTimestampSchema,
   editorSmoothCaretAnimationSchema,
   editorTextSizeSchema,
   editorFullWidthSchema,

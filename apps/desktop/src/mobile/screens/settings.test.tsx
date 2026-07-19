@@ -156,6 +156,9 @@ describe('MobileSettings', () => {
 
     await user.click(page.getByRole('switch', { name: 'Bullet after a heading' }))
     expect(updateSettings).toHaveBeenCalledWith({ editorBulletAfterHeading: false })
+
+    await user.click(page.getByRole('switch', { name: 'Daily note auto-timestamp' }))
+    expect(updateSettings).toHaveBeenCalledWith({ editorDailyNoteAutoTimestamp: false })
   })
 
   it('toggles audio transcription formatting', async () => {

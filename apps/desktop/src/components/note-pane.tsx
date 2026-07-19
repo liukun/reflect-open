@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useRef, useState, type ReactElement } from 'react'
 import type { ExitBoundaryHandler, SearchStatus } from '@meowdown/core'
 import {
+  dateFromDailyPath,
   detectConflictMarkers,
   isDaily,
   isTemplatePath,
@@ -16,6 +17,7 @@ import { SuggestedContactCard } from '@/components/suggested-contact-card'
 import { SyncConflictNotice } from '@/components/sync-conflict-notice'
 import { EditorAiKeymap } from '@/editor/ai-menu/editor-ai-keymap'
 import { useEditorAiMenu } from '@/editor/ai-menu/use-editor-ai-menu'
+import { DailyNoteAutoTimestampExtension } from '@/editor/daily-note-auto-timestamp-extension'
 import { editorBodyWithDefaultBullet } from '@/editor/default-bullet'
 import {
   registerNoteEditorHandle,
@@ -31,6 +33,7 @@ import { useTemplateSlashItems } from '@/editor/use-template-slash-items'
 import { useWikiLinkNavigation } from '@/editor/use-wiki-link-navigation'
 import { useWikiLinkHoverPreview } from '@/editor/use-wiki-link-hover-preview'
 import { isTouchEditorSurface } from '@/lib/platform-surface'
+import { useToday } from '@/lib/use-today'
 import { cn } from '@/lib/utils'
 import { useGraph } from '@/providers/graph-provider'
 import { useNoteSearchQuery, useNoteSearchReport } from '@/providers/note-find-provider'
@@ -134,6 +137,13 @@ export function NotePaneComponent({
   const generation = graph?.generation ?? null
   const dailyNote = isDaily(path)
   const lazyCreate = lazy && (dailyNote || isUntitledNotePath(path))
+  // Auto-timestamp is scoped to *today's* daily note only: back-dated or future
+  // daily notes are for reflection and planning, so pinning the current wall
+  // clock onto their bullets would be noise. `useToday` re-renders across
+  // local midnight so an open pane picks up its new role the moment it becomes
+  // (or stops being) today.
+  const today = useToday()
+  const isTodayDaily = dailyNote && dateFromDailyPath(path) === today
   // Templates rename via file operations only (settings, or outside the app):
   // the rename pipeline's slug targets live under `notes/`, so tracking a
   // template's title would move it out of `templates/`. The untitled `id:`
@@ -394,6 +404,7 @@ export function NotePaneComponent({
         onExitBoundary={handleExitBoundary}
       >
         <EditorAiKeymap onTrigger={aiMenu.openMenu} />
+        {isTodayDaily && settings.editorDailyNoteAutoTimestamp ? <DailyNoteAutoTimestampExtension /> : null}
       </NoteEditor>
 
       {showBacklinks ? (
