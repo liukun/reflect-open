@@ -79,6 +79,10 @@ export function DailyStream({ target }: DailyStreamProps): ReactElement {
   // The entry also carries where the caret lands: capture arrivals (⌘D, the
   // sidebar's Daily notes row — the router's `arrivalFocusEditor`) append at
   // the end of the day's content, every other arrival keeps the note start.
+  // Cold-boot onto today/daily (no navigate has happened yet, so `arrivalSeq`
+  // is still 0) counts as a capture arrival too: opening the app onto the
+  // daily spine is an implicit "ready to write", so the caret lands at the
+  // end — same append semantics as ⌘D.
   // The slot is consumed when the editor actually mounts and focuses (not at
   // render time), so a virtualizer re-render before the lazy load completes
   // can't drop the focus.
@@ -195,9 +199,13 @@ export function DailyStream({ target }: DailyStreamProps): ReactElement {
     }
     const target = targetDateRef.current
     pendingFocusRef.current = null
+    // `arrivalSeq === 0` is the cold-boot mount (no navigate has fired yet):
+    // treat it as an implicit capture arrival so today opens ready to append,
+    // matching ⌘D and the sidebar's Daily notes row.
+    const capture = arrivalFocusEditorRef.current || arrivalSeq === 0
     focusPending.current = {
       date: target,
-      selection: arrivalFocusEditorRef.current ? 'end' : 'start',
+      selection: capture ? 'end' : 'start',
     }
     virtualizerRef.current?.scrollToIndex(indexOfDate(dayWindow, target), { align: 'start' })
   }, [arrivalSeq, entryId, dayWindow, savedScroll])

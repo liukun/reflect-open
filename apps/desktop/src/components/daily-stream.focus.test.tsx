@@ -133,6 +133,21 @@ async function renderStream() {
 }
 
 describe('DailyStream arrival focus', () => {
+  it('cold boot (no navigate yet) focuses today with the caret at the end', async () => {
+    const today = todayIso()
+    const { view, anchored, paneFor } = await renderStream()
+
+    // No explicit navigate — opening the app onto today counts as an
+    // implicit capture arrival (same append semantics as ⌘D), so the caret
+    // lands at the end of today's content.
+    await anchored(today)
+
+    const pane = paneFor(today)
+    await expect.element(pane).toHaveAttribute('data-autofocus', 'true')
+    await expect.element(pane).toHaveAttribute('data-selection', 'end')
+    view.unmount()
+  })
+
   it('a capture arrival (focusEditor) focuses today with the caret at the end', async () => {
     const today = todayIso()
     const { view, navigate, anchored, paneFor } = await renderStream()
